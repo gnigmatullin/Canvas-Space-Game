@@ -1,0 +1,135 @@
+<html>
+    <head>
+        <script>
+            var canvas;
+            var context;
+            var screen_x1 = 20;
+            var screen_x2 = 830;
+            var screen_width = screen_x2 - screen_x1;
+            var screen_y1 = 10;
+            var screen_y2 = 420;
+            var screen_height = screen_y2 - screen_y1;
+            var ufo_x = 0;
+            var ufo_y = 0;
+            var ufo_img;
+            var live_img;
+            var back_img;
+            var asteroids = [];
+            var aliens = [];
+            window.addEventListener('keydown', this.check, false);
+            
+            function getRandomInt(min, max) {
+                min = Math.ceil(min);
+                max = Math.floor(max);
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+            
+            function drawRotatedImage(image, x, y, angle) { 
+                var TO_RADIANS = Math.PI/180;
+                context.save();             
+                context.translate(x, y);
+                context.rotate(angle * TO_RADIANS);
+                context.drawImage(image, -(image.width/2), -(image.height/2));
+                context.restore(); 
+            }
+            
+            class Object {
+                constructor(type, x, y, y_speed, angle, angle_speed) {
+                    this.type = type;
+                    this.x = x;
+                    this.y = y;
+                    this.y_speed = y_speed;
+                    this.angle = angle;
+                    this.angle_speed = angle_speed;
+                    this.image = new Image();
+                    if (this.type == 'asteroid') this.max_num = 11;
+                    if (this.type == 'alien') this.max_num = 20;
+                    this.number = getRandomInt(1, this.max_num);
+                    this.image.src = this.type + this.number + '.png';
+                }
+                move() {
+                    this.y = this.y + this.y_speed;
+                    if (this.y > screen_height) {
+                        this.y = 0;
+                        this.x = getRandomInt(screen_x1, screen_x2);
+                        this.imgage = new Image();
+                        this.number = getRandomInt(1, this.max_num);
+                        this.image.src = this.type + this.number + '.png';
+                    }
+                    this.angle = this.angle + this.angle_speed;
+                    if (this.angle < 0) this.angle = 360;
+                    if (this.angle > 360) this.angle = 0;
+                    drawRotatedImage(this.image, this.x, this.y, this.angle);
+                }
+            }
+            
+            function draw() {
+                context.drawImage(back_img, 0, 0);                
+                context.drawImage(ufo_img, ufo_x, ufo_y);
+                context.drawImage(live_img, 20, screen_y2+30);
+                context.drawImage(live_img, 50, screen_y2+30);
+                context.drawImage(live_img, 80, screen_y2+30);
+                context.drawImage(live_img, 110, screen_y2+30);
+                context.drawImage(live_img, 140, screen_y2+30);
+                asteroids.forEach(function(item, index, array) {
+                    item.move();
+                });
+                aliens.forEach(function(item, index, array) {
+                    item.move();
+                });
+                window.requestAnimationFrame(draw);
+            }
+
+            function check(e) {
+                switch (e.keyCode) {
+                    case 37:    // left
+                        ufo_x = ufo_x - 10;
+                        if (ufo_x < screen_x1) ufo_x = screen_x1;
+                        break;
+                    case 38:    // up
+                        ufo_y = ufo_y - 10;
+                        if (ufo_y < screen_y1) ufo_y = screen_y1;
+                        break;
+                    case 39:    // right
+                        ufo_x = ufo_x + 10;
+                        if (ufo_x > screen_x2 - 70) ufo_x = screen_x2 - 70;
+                        break;
+                    case 40:    // down
+                        ufo_y = ufo_y + 10;
+                        if (ufo_y > screen_y2 - 50) ufo_y = screen_y2 - 50;
+                        break;
+                }
+            }
+            
+            function run() {
+                canvas = document.getElementById("canvas");
+                context = canvas.getContext("2d");
+                ufo_img = new Image();
+                ufo_img.src = 'ufo.png';
+                live_img = new Image();
+                live_img.src = 'live.png';
+                for (i = 0; i < 5; i++) {
+                    object = new Object('asteroid', getRandomInt(screen_x1, screen_x2), getRandomInt(-screen_y2, 0), getRandomInt(2, 5), 0, getRandomInt(-10, 10));
+                    asteroids.push(object);
+                }
+                for (i = 0; i < 5; i++) {
+                    object = new Object('alien', getRandomInt(0, screen_x2), getRandomInt(-screen_y2, 0), getRandomInt(2, 5), 0, getRandomInt(-10, 10));
+                    aliens.push(object);
+                }
+                back_img = new Image();
+                back_img.src = 'stars.jpg';
+                back_img.onload = function() {
+                    var ufo_wd = ufo_img.width;
+                    var ufo_ht = ufo_img.height;
+                    ufo_x = (screen_x2 - ufo_wd) / 2;
+                    ufo_y = screen_y2 - 50;
+                    window.requestAnimationFrame(draw);
+                }
+            }
+            
+        </script>
+    </head>
+    <body onload="run()">
+        <canvas id="canvas" width="850" height="480"></canvas>
+    </body>
+</html>
